@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flirt Helper - Upload & Edit</title>
+  <script src="{{ url_for('static', filename='js/chat-integration.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"> 
+  <style>
+    /* Global Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #2A004E 0%, #3B0078 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      width: 100%;
+      padding: 1rem 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #FFB3F0;
+    }
+
+    .nav-links a {
+      margin-left: 1.5rem;
+      text-decoration: none;
+      color: #FFD1FA;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+    }
+
+    /* Main Container */
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 2rem auto;
+      background: #fff;
+      color: #333;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .container h1 {
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      color: #6700A8;
+    }
+
+    .container p.subtitle {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      color: #444;
+    }
+
+    /* View Example Button */
+    .view-example {
+      display: inline-block;
+      margin: 0 auto 2rem;
+      text-align: center;
+      background: #FFD1FA;
+      color: #6700A8;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    .view-example:hover {
+      background: #FFC4F7;
+    }
+
+    /* Upload Section */
+    .upload-section {
+      margin-bottom: 2rem;
+    }
+    .upload-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: block;
+      color: #6700A8;
+    }
+    .drop-zone {
+      border: 2px dashed #6700A8;
+      border-radius: 0.5rem;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+      color: #555;
+    }
+    .drop-zone:hover {
+      background: #FFE8FA;
+    }
+    .drop-zone p {
+      margin: 0.5rem 0;
+      color: #333;
+      font-size: 1rem;
+    }
+    /* Hide actual file input */
+    .file-input {
+      display: none;
+    }
+
+    /* Extracted Text Area */
+    label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+      color: #6700A8;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      border: 2px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 0.8rem;
+      font-size: 1rem;
+      resize: vertical;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Style Selection */
+    .style-selection {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .style-btn {
+      flex: 1;
+      min-width: 100px;
+      background: #F4F4F4;
+      color: #333;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.6rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    .style-btn:hover {
+      background: #FFE8FA;
+      color: #6700A8;
+    }
+
+    /* Generate Button */
+    .generate-btn {
+      width: 100%;
+      background: #6700A8;
+      color: #fff;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .generate-btn:hover {
+      background: #5A008F;
+    }
+    .generate-btn span {
+      font-size: 1.2rem;
+    }
+
+    /* Output Section */
+    .output-section {
+      margin-top: 2rem;
+    }
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .output-header button {
+      background: #FFB3F0;
+      border: none;
+      color: #6700A8;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      margin-left: 1rem;
+      transition: background 0.3s;
+    }
+    .output-header button:hover {
+      background: #ffa0ec;
+    }
+    .output-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .output-card {
+      background: #f9f9f9;
+      border: 2px dashed #6700A8;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      color: #333;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      color: #DDD;
+      margin-top: auto;
+      padding: 2rem 0;
+    }
+    footer a {
+      color: #FFD1FA;
+      text-decoration: none;
+      margin: 0 0.5rem;
+      transition: color 0.3s;
+    }
+    footer a:hover {
+      color: #fff;
+    }
+    footer p {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .nav-links a {
+        margin-left: 1rem;
+      }
+      .style-selection {
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header / Navbar -->
+  <header>
+    <div class="logo">Simpify</div>
+    <nav class="nav-links">
+      <a href="#">Quick Access</a>
+      <a href="#">Upgrade</a>
+      <a href="#">My Account</a>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+    <h1>Message Reply</h1>
+    <p class="subtitle">Continue an ongoing conversation with AI-powered prompts.</p>
+    
+    <!-- Example Link -->
+    <a href="#" class="view-example">View Example</a>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+      <span class="upload-label">Upload Chat Screenshot</span>
+      <label for="fileInput" class="drop-zone" id="dropZone">
+        <p>Drag & Drop or Click to Upload</p>
+      </label>
+      <input type="file" id="fileInput" class="file-input" accept="image/*" />
+    </div>
+
+    <!-- Extracted Text -->
+    <label for="extractedText">Extracted / Editable Text</label>
+    <textarea id="extractedText" placeholder="Your extracted chat text will appear here..."></textarea>
+
+    <!-- Style Selection -->
+    <div class="style-selection">
+      <button class="style-btn">Flirty</button>
+      <button class="style-btn">Confident</button>
+      <button class="style-btn">Friendly</button>
+      <button class="style-btn">Sympathy</button>
+      <button class="style-btn">Playful</button>
+      <button class="style-btn">Funny</button>
+    </div>
+
+    <div class="length-selection">
+      <span class="length-label">Message Length:</span>
+      <div class="length-options">
+        <button class="length-btn" data-length="short">Short</button>
+        <button class="length-btn" data-length="medium">Medium</button>
+        <button class="length-btn" data-length="long">Long</button>
+      </div>
+    </div>
+    <!-- Generate Button -->
+    <button class="generate-btn" id="generateReplyBtn">
+      <span>🔥</span>
+      Generate
+    </button>
+
+    <!-- Output Section -->
+    <div class="output-section">
+      <div class="output-header">
+        <h3>Output</h3>
+        <div>
+          <button id="viewSavedBtn">View Saved</button>
+          <button id="regenerateBtn">Re-Generate</button>
+        </div>
+      </div>
+      <div class="output-cards" id="outputCards">
+        <!-- Each output card could be a potential reply -->
+        <!-- Example placeholders -->
+        <div class="output-card">Output: (Sample Reply 1)</div>
+        <div class="output-card">Output: (Sample Reply 2)</div>
+        <div class="output-card">Output: (Sample Reply 3)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>
+      <a href="#">Terms & Conditions</a> | 
+      <a href="#">Privacy Policy</a> | 
+      <a href="#">Contact</a>
+    </div>
+    <p>© 2025 Simpify</p>
+  </footer>
+
+  <!-- Optional JavaScript for Demo / Drag & Drop -->
+  <script>
+    // Initialize variables
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const generateBtn = document.getElementById('generateReplyBtn');
+    const outputCards = document.getElementById('outputCards');
+    const extractedText = document.getElementById('extractedText');
+    let selectedStyle = 'flirty';
+
+    // Style selection handler
+    document.querySelectorAll('.style-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            document.querySelectorAll('.style-btn').forEach(btn => 
+                btn.style.backgroundColor = '#F4F4F4');
+            e.target.style.backgroundColor = '#FFE8FA';
+            selectedStyle = e.target.textContent.toLowerCase();
+        });
+    });
+
+    // Initialize drag/drop and click handlers
+    initializeFileUpload();
+    initializeGenerateButton();
+</script>
+</body>
+</html>

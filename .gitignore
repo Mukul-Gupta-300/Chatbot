@@ -1,0 +1,20 @@
+# Ignore virtual environment
+venv/
+.env
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and database
+*.log
+instance/
+*.sqlite3
+
+# VS Code settings (optional)
+.vscode/
+
+# PyCharm settings (optional)
+.idea/

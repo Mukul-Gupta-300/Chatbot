@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 // Update UI with extracted text
-                extractedText.value = data.text.join('\n');
+                extractedText.value = data.messages.join('\n');
                 dropZone.innerHTML = '<p>Image processed successfully!</p>';
                 dropZone.style.background = '#e6ffe6';
                 
@@ -139,57 +139,58 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Generate reply button handler
-    function initializeGenerateButton() {
-        generateBtn.addEventListener('click', function() {
-            if (isProcessing) return;
-            
-            const chatText = extractedText.value.trim();
-            if (!chatText) {
-                alert('Please upload a chat image or enter chat text manually.');
-                return;
+    // Generate reply button handler
+function initializeGenerateButton() {
+    generateBtn.addEventListener('click', function() {
+        if (isProcessing) return;
+        
+        const chatText = extractedText.value.trim();
+        if (!chatText) {
+            alert('Please upload a chat image or enter chat text manually.');
+            return;
+        }
+        
+        // Show loading state
+        isProcessing = true;
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<span>⏳</span> Generating...';
+        outputCards.innerHTML = '<div class="output-card">Generating response...</div>';
+        
+        // Prepare request data
+        const requestData = {
+            chat_text: chatText,
+            style: selectedStyle,
+            // Removed num_responses since we're only generating one
+        };
+        
+        // Send to backend API
+        fetch('/api/generate-responses', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayResponses(data.responses); // Still works with a single-item array
+            } else {
+                throw new Error(data.error || 'Failed to generate response');
             }
-            
-            // Show loading state
-            isProcessing = true;
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<span>⏳</span> Generating...';
-            outputCards.innerHTML = '<div class="output-card">Generating responses...</div>';
-            
-            // Prepare request data
-            const requestData = {
-                chat_text: chatText,
-                style: selectedStyle,
-                num_responses: 3  // Generate multiple responses
-            };
-            
-            // Send to backend API
-            fetch('/api/generate-responses', {  // Changed from generate-response to generate-responses
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    displayResponses(data.responses);
-                } else {
-                    throw new Error(data.error || 'Failed to generate responses');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                outputCards.innerHTML = '<div class="output-card">Error generating responses. Please try again.</div>';
-            })
-            .finally(() => {
-                // Reset UI state
-                isProcessing = false;
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<span>🔥</span> Generate';
-            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            outputCards.innerHTML = '<div class="output-card">Error generating response. Please try again.</div>';
+        })
+        .finally(() => {
+            // Reset UI state
+            isProcessing = false;
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<span>🔥</span> Generate';
         });
-    }
+    });
+}
     
     // Display generated responses
     function displayResponses(responses) {

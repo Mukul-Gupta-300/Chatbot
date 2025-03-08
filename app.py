@@ -64,11 +64,11 @@ def extract_text():
             # Process the chat image
             result = text_extractor.process_chat_image(filepath)
             
-            # Return the processed messages
+            # Return the processed messages - FIXED ACCESS PATTERN
             return jsonify({
                 'success': True,
-                'messages': result['processed']['messages'],
-                'structured_chat': result['processed']['structured_chat']
+                'messages': result['messages'],
+                'structured_chat': result['structured_chat']
             })
         except Exception as e:
             logger.error(f"Error processing image: {e}")
@@ -87,10 +87,9 @@ def generate_response():
     try:
         chat_text = data['chat_text']
         style = data.get('style', 'friendly')
-        num_responses = min(int(data.get('num_responses', 3)), 5)  # Limit to 5 max responses
         message_length = data.get('message_length', 'medium')
         
-        logger.info(f"Generating {num_responses} responses with style: {style}, length: {message_length}")
+        logger.info(f"Generating 1 response with style: {style}, length: {message_length}")
         
         # Parse chat history from text (handling both string and list inputs)
         if isinstance(chat_text, str):
@@ -98,19 +97,20 @@ def generate_response():
         else:
             chat_history = chat_text
         
-        # Generate multiple responses
-        responses = chat_generator.generate_multiple_responses(
+        # Generate a single response instead of multiple
+        response = chat_generator.generate_response(
             chat_history, 
             style=style,
-            count=num_responses,
             message_length=message_length
         )
         
-        return jsonify({'success': True, 'responses': responses})
+        # Return as a list with one item for consistency with frontend
+        return jsonify({'success': True, 'responses': [response]})
     except Exception as e:
-        logger.error(f"Error generating responses: {e}")
+        logger.error(f"Error generating response: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/upload-base64', methods=['POST'])
 @app.route('/api/upload-base64', methods=['POST'])
 def upload_base64():
     """Handle base64 encoded image uploads"""
@@ -128,13 +128,12 @@ def upload_base64():
         
         return jsonify({
             'success': True,
-            'messages': result['processed']['messages'],
-            'structured_chat': result['processed']['structured_chat']
+            'messages': result['messages'],
+            'structured_chat': result['structured_chat']
         })
     except Exception as e:
         logger.error(f"Error processing base64 image: {e}")
         return jsonify({'error': str(e)}), 500
-
 # Add a new endpoint for direct text input without image
 @app.route('/api/process-text', methods=['POST'])
 def process_text():
